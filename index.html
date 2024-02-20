@@ -47,51 +47,62 @@
   </div>
 
   <script>
-    const app = Vue.createApp({
-      data() {
-        return {
-          characters: [],
-          page: 1,
-          totalPages: 1,
-          filter: {
-            name: '',
-            status: ''
-          }
-        };
-      },
-      created() {
-        this.fetchCharacters();
-      },
-      methods: {
-        async fetchCharacters() {
+    const { reactive, onMounted } = Vue;
+
+    const app = {
+      setup() {
+        const characters = reactive([]);
+        const page = reactive(1);
+        const totalPages = reactive(1);
+        const filter = reactive({
+          name: '',
+          status: ''
+        });
+
+        const fetchCharacters = async () => {
           try {
-            const response = await axios.get(`https://rickandmortyapi.com/api/character/?page=${this.page}&name=${this.filter.name}&status=${this.filter.status}`);
-            this.totalPages = response.data.info.pages;
-            this.characters = response.data.results;
+            const response = await axios.get(`https://rickandmortyapi.com/api/character/?page=${page}&name=${filter.name}&status=${filter.status}`);
+            totalPages.value = response.data.info.pages;
+            characters.value = response.data.results;
           } catch (error) {
             console.error('Error fetching characters:', error);
           }
-        },
-        nextPage() {
-          if (this.page < this.totalPages) {
-            this.page++;
-            this.fetchCharacters();
-          }
-        },
-        prevPage() {
-          if (this.page > 1) {
-            this.page--;
-            this.fetchCharacters();
-          }
-        },
-        applyFilters() {
-          this.page = 1;
-          this.fetchCharacters();
-        }
-      }
-    });
+        };
 
-    app.mount('#app');
+        const nextPage = () => {
+          if (page < totalPages) {
+            page++;
+            fetchCharacters();
+          }
+        };
+
+        const prevPage = () => {
+          if (page > 1) {
+            page--;
+            fetchCharacters();
+          }
+        };
+
+        const applyFilters = () => {
+          page.value = 1;
+          fetchCharacters();
+        };
+
+        onMounted(fetchCharacters);
+
+        return {
+          characters,
+          page,
+          totalPages,
+          filter,
+          nextPage,
+          prevPage,
+          applyFilters
+        };
+      }
+    };
+
+    Vue.createApp(app).mount('#app');
   </script>
 </body>
 </html>
