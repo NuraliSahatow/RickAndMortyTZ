@@ -47,21 +47,20 @@
   </div>
 
   <script>
-    const { reactive, onMounted } = Vue;
-
-    const app = {
+    const { ref, onMounted } = Vue;
+    const app = Vue.createApp({
       setup() {
-        const characters = reactive([]);
-        const page = reactive(1);
-        const totalPages = reactive(1);
-        const filter = reactive({
+        const characters = ref([]);
+        const page = ref(1);
+        const totalPages = ref(1);
+        const filter = ref({
           name: '',
           status: ''
         });
 
         const fetchCharacters = async () => {
           try {
-            const response = await axios.get(`https://rickandmortyapi.com/api/character/?page=${page}&name=${filter.name}&status=${filter.status}`);
+            const response = await axios.get(`https://rickandmortyapi.com/api/character/?page=${page.value}&name=${filter.value.name}&status=${filter.value.status}`);
             totalPages.value = response.data.info.pages;
             characters.value = response.data.results;
           } catch (error) {
@@ -70,15 +69,15 @@
         };
 
         const nextPage = () => {
-          if (page < totalPages) {
-            page++;
+          if (page.value < totalPages.value) {
+            page.value++;
             fetchCharacters();
           }
         };
 
         const prevPage = () => {
-          if (page > 1) {
-            page--;
+          if (page.value > 1) {
+            page.value--;
             fetchCharacters();
           }
         };
@@ -95,14 +94,15 @@
           page,
           totalPages,
           filter,
+          fetchCharacters,
           nextPage,
           prevPage,
           applyFilters
         };
       }
-    };
+    });
 
-    Vue.createApp(app).mount('#app');
+    app.mount('#app');
   </script>
 </body>
 </html>
